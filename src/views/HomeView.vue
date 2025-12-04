@@ -2,18 +2,25 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { usePlayersStore } from '../stores/usePlayersStore'
 import { useCurrentUserStore } from '../stores/useCurrentUserStore'
-import NominateModal from '../components/NominateModal.vue'
-import { supabase } from '../supabaseClient'
 import { useVotesStore } from '../stores/useVotesStore'
+import NominateModal from '../components/NominateModal.vue'
 import VoteNotification from '../components/VoteNotification.vue'
+import { supabase } from '../supabaseClient'
+import MilestonePopup from '../components/MilestonePopup.vue'
 
 
+/* STORES */
 const playersStore = usePlayersStore()
-const { rankedPlayers } = playersStore
-
+const votesStore = useVotesStore()
 const currentUserStore = useCurrentUserStore()
 const currentUser = computed(() => currentUserStore.user)
 
+
+/* COMPUTED */
+const rankedPlayers = computed(() => playersStore.rankedPlayers)
+
+
+/* NOMINATION MODAL */
 const selectedPlayer = ref(null)
 const isNominateOpen = ref(false)
 
@@ -23,15 +30,16 @@ const openNominate = (player) => {
 }
 
 const handleCloseNominate = () => {
-  isNominateOpen.value = false
   selectedPlayer.value = null
+  isNominateOpen.value = false
 }
 
 const handleSubmitNomination = async ({ playerId, reason }) => {
   if (!currentUser.value) return
 
-  const now = Date.now()
-  const expiresAt = new Date(now + 10 * 60 * 1000).toISOString() // now + 10 min
+  // now + 5 minutes
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString()
+
 
   const { error } = await supabase.from('votes').insert({
     target_id: playerId,
@@ -41,32 +49,37 @@ const handleSubmitNomination = async ({ playerId, reason }) => {
   })
 
   if (error) {
-    console.error('Error creating vote', error)
+    console.error('Error creating vote:', error)
     alert('Could not create vote, check console.')
     return
   }
 
-  isNominateOpen.value = false
+  // close modal
   selectedPlayer.value = null
+  isNominateOpen.value = false
 }
 
-const votesStore = useVotesStore()
 
+/* LIFECYCLE */
 onMounted(() => {
-  votesStore.startRealtime()
+  playersStore.loadPlayers()         // load players from Supabase
+  votesStore.startRealtime()    
+  votesStore.startRealtime()     // start listening for votes
+  votesStore.resolveExpiredVotes()   // auto-resolve any old pending votes
 })
 
 onBeforeUnmount(() => {
   votesStore.stopRealtime()
+  playersStore.stopRealtime()
 })
 
 
-
+/* LOGOUT */
 const logout = () => {
   currentUserStore.logout()
-  // router guard will push them back to /login
 }
 </script>
+
 
 <template>
   <div class="app-shell">
@@ -140,8 +153,8 @@ const logout = () => {
             <p class="bottom-hint-text">
               <strong>First point</strong> of the night triggers a shot.
             </p>
-            <button class="bottom-hint-cta" type="button">
-              View point rules
+            <button class="bottom-hint-cta" type="button" @click="$router.push('/rules')">
+            View point rules
             </button>
           </div>
         </div>
@@ -155,6 +168,9 @@ const logout = () => {
       />
     </main>
   </div>
+  <MilestonePopup />
   <VoteNotification />
+
+
 
 </template>

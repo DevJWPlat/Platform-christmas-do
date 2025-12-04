@@ -34,6 +34,8 @@ const handleRespond = async (response) => {
     response,
     currentUserStore.user.id
   )
+  await votesStore.resolveExpiredVotes()
+
 
   // close this one and load next
   loadNext()

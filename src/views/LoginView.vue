@@ -1,13 +1,17 @@
 <script setup>
+import { onMounted } from 'vue'
 import { usePlayersStore } from '../stores/usePlayersStore'
 import { useCurrentUserStore } from '../stores/useCurrentUserStore'
 import { useRouter } from 'vue-router'
 
 const playersStore = usePlayersStore()
-const { players } = playersStore
-
 const currentUserStore = useCurrentUserStore()
 const router = useRouter()
+
+// ✅ load players from Supabase when this view mounts
+onMounted(() => {
+  playersStore.loadPlayers()
+})
 
 const selectUser = (player) => {
   currentUserStore.login({
@@ -41,9 +45,14 @@ const selectUser = (player) => {
           </div>
         </div>
 
-        <div class="player-list">
+        <!-- simple loading state -->
+        <p v-if="playersStore.loading" class="section-tagline">
+          Loading players…
+        </p>
+
+        <div v-else class="player-list">
           <button
-            v-for="player in players"
+            v-for="player in playersStore.players"
             :key="player.id"
             type="button"
             class="player-card"
