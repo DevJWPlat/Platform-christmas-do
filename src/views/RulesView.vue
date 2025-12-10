@@ -40,19 +40,21 @@ const logout = () => {
 <template>
   <div class="app-shell">
     <header class="app-header">
-      <div class="app-header-left">
-        <router-link :to="{ name: 'home' }" class="logo-pill">
-          <img src="/logo.svg" alt="Logo" class="logo-img" />
-        </router-link>
-        <div class="app-title">
-          <span class="app-title-main">Points Rules</span>
-          <span class="app-title-sub">Forfeits & milestones</span>
+      <div class="wrapper">
+        <div class="app-header-left">
+          <router-link :to="{ name: 'home' }" class="logo-pill">
+            <img src="/logo.svg" alt="Logo" class="logo-img" />
+          </router-link>
+          <div class="app-title">
+            <span class="app-title-main">Points Rules</span>
+            <span class="app-title-sub">Forfeits & milestones</span>
+          </div>
         </div>
-      </div>
 
-      <button class="icon-button" type="button" @click="toggleMenu">
-        <span></span>
-      </button>
+        <button class="icon-button" type="button" @click="toggleMenu">
+          <span></span>
+        </button>
+      </div>
     </header>
 
     <!-- Hamburger Menu -->

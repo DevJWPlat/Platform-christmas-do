@@ -74,13 +74,15 @@ const handleLogin = async () => {
 <template>
   <div class="app-shell">
     <header class="app-header">
-      <div class="app-header-left">
-        <div class="logo-pill">
-          <img src="/logo.svg" alt="Logo" class="logo-img" />
-        </div>
-        <div class="app-title">
-          <span class="app-title-main">Who are you?</span>
-          <span class="app-title-sub">Tap your name to join the game</span>
+      <div class="wrapper">
+        <div class="app-header-left">
+          <div class="logo-pill">
+            <img src="/logo.svg" alt="Logo" class="logo-img" />
+          </div>
+          <div class="app-title">
+            <span class="app-title-main">Who are you?</span>
+            <span class="app-title-sub">Tap your name to join the game</span>
+          </div>
         </div>
       </div>
     </header>
