@@ -12,7 +12,11 @@ export default defineConfig({
   build: {
     outDir: 'docs',
   },
-  plugins: [vue(), vueDevTools()],
+  plugins: [
+    vue(),
+    // Only include vueDevTools in development
+    ...(process.env.NODE_ENV !== 'production' ? [vueDevTools()] : []),
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
