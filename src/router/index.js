@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RulesView from '../views/RulesView.vue'
+import FeedView from '../views/FeedView.vue'
 import { useCurrentUserStore } from '../stores/useCurrentUserStore'
 
 const router = createRouter({
@@ -21,7 +22,14 @@ const router = createRouter({
     {
       path: '/rules',
       name: 'rules',
-      component: RulesView
+      component: RulesView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/feed',
+      name: 'feed',
+      component: FeedView,
+      meta: { requiresAuth: true },
     },
   ],
 })

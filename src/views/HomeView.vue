@@ -7,7 +7,9 @@ import NominateModal from '../components/NominateModal.vue'
 import VoteNotification from '../components/VoteNotification.vue'
 import { supabase } from '../supabaseClient'
 import MilestonePopup from '../components/MilestonePopup.vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 
 /* STORES */
 const playersStore = usePlayersStore()
@@ -15,10 +17,24 @@ const votesStore = useVotesStore()
 const currentUserStore = useCurrentUserStore()
 const currentUser = computed(() => currentUserStore.user)
 
-
 /* COMPUTED */
 const rankedPlayers = computed(() => playersStore.rankedPlayers)
 
+/* HAMBURGER MENU */
+const isMenuOpen = ref(false)
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value
+}
+
+const closeMenu = () => {
+  isMenuOpen.value = false
+}
+
+const navigateTo = (route) => {
+  router.push(route)
+  closeMenu()
+}
 
 /* NOMINATION MODAL */
 const selectedPlayer = ref(null)
@@ -38,8 +54,7 @@ const handleSubmitNomination = async ({ playerId, reason }) => {
   if (!currentUser.value) return
 
   // now + 5 minutes
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString()
-
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString()
 
   const { error } = await supabase.from('votes').insert({
     target_id: playerId,
@@ -59,13 +74,12 @@ const handleSubmitNomination = async ({ playerId, reason }) => {
   isNominateOpen.value = false
 }
 
-
 /* LIFECYCLE */
 onMounted(() => {
-  playersStore.loadPlayers()         // load players from Supabase
-  votesStore.startRealtime()    
-  votesStore.startRealtime()     // start listening for votes
-  votesStore.resolveExpiredVotes()   // auto-resolve any old pending votes
+  playersStore.loadPlayers() // load players from Supabase
+  playersStore.startRealtime() // start realtime updates
+  votesStore.startRealtime() // start listening for votes
+  votesStore.resolveExpiredVotes() // auto-resolve any old pending votes
 })
 
 onBeforeUnmount(() => {
@@ -73,33 +87,65 @@ onBeforeUnmount(() => {
   playersStore.stopRealtime()
 })
 
-
 /* LOGOUT */
 const logout = () => {
   currentUserStore.logout()
+  closeMenu()
+  router.push({ name: 'login' })
 }
 </script>
-
 
 <template>
   <div class="app-shell">
     <header class="app-header">
       <div class="app-header-left">
-        <div class="logo-pill">
-          P
-        </div>
+        <router-link :to="{ name: 'home' }" class="logo-pill">
+          <img src="/logo.svg" alt="Logo" class="logo-img" />
+        </router-link>
         <div class="app-title">
           <span class="app-title-main">Christmas Do</span>
-          <span class="app-title-sub">
-            Logged in as {{ currentUser?.name }}
-          </span>
+          <span class="app-title-sub"> Logged in as {{ currentUser?.name }} </span>
         </div>
       </div>
 
-      <button class="icon-button" type="button" @click="logout">
+      <button class="icon-button" type="button" @click="toggleMenu">
         <span></span>
       </button>
     </header>
+
+    <!-- Hamburger Menu -->
+    <div v-if="isMenuOpen" class="menu-backdrop" @click="closeMenu">
+      <div class="menu-panel" @click.stop>
+        <div class="menu-header">
+          <h3 class="menu-title">Menu</h3>
+          <button class="menu-close" @click="closeMenu">✕</button>
+        </div>
+
+        <nav class="menu-nav">
+          <button class="menu-item" @click="navigateTo('/home')">
+            <span class="menu-item-icon">🏠</span>
+            <span class="menu-item-text">Leaderboard</span>
+          </button>
+
+          <button class="menu-item" @click="navigateTo('/feed')">
+            <span class="menu-item-icon">📰</span>
+            <span class="menu-item-text">Activity Feed</span>
+          </button>
+
+          <button class="menu-item" @click="navigateTo('/rules')">
+            <span class="menu-item-icon">📋</span>
+            <span class="menu-item-text">Points Rules</span>
+          </button>
+
+          <div class="menu-divider"></div>
+
+          <button class="menu-item menu-item-danger" @click="logout">
+            <span class="menu-item-icon">🚪</span>
+            <span class="menu-item-text">Logout</span>
+          </button>
+        </nav>
+      </div>
+    </div>
 
     <main class="app-main">
       <section>
@@ -108,9 +154,7 @@ const logout = () => {
             <h1 class="section-title">Players</h1>
             <p class="section-tagline">Tap a player to nominate a point</p>
           </div>
-          <div class="points-legend-pill">
-            1 point = 1 shot
-          </div>
+          <div class="points-legend-pill">1 point = 1 shot</div>
         </div>
 
         <div class="player-list">
@@ -128,9 +172,7 @@ const logout = () => {
             <div class="player-main">
               <div class="player-name-row">
                 <span class="player-name">{{ player.name }}</span>
-                <span class="player-tag">
-                  Tap to nominate
-                </span>
+                <span class="player-tag"> Tap to nominate </span>
               </div>
               <div class="player-meta">
                 Currently on {{ player.points }} point<span v-if="player.points !== 1">s</span>
@@ -141,9 +183,7 @@ const logout = () => {
               <div class="points-badge">
                 <span>{{ player.points }}</span> pts
               </div>
-              <div class="player-rank">
-                Rank #{{ player.rank }}
-              </div>
+              <div class="player-rank">Rank #{{ player.rank }}</div>
             </div>
           </button>
         </div>
@@ -154,7 +194,7 @@ const logout = () => {
               <strong>First point</strong> of the night triggers a shot.
             </p>
             <button class="bottom-hint-cta" type="button" @click="$router.push('/rules')">
-            View point rules
+              View point rules
             </button>
           </div>
         </div>
@@ -170,7 +210,4 @@ const logout = () => {
   </div>
   <MilestonePopup />
   <VoteNotification />
-
-
-
 </template>
