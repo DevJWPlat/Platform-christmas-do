@@ -36,14 +36,24 @@ const router = createRouter({
 
 // Simple auth guard
 router.beforeEach((to, from, next) => {
-  const currentUserStore = useCurrentUserStore()
+  try {
+    const currentUserStore = useCurrentUserStore()
 
-  if (to.meta.requiresAuth && !currentUserStore.isLoggedIn) {
-    next({ name: 'login' })
-  } else if (to.name === 'login' && currentUserStore.isLoggedIn) {
-    next({ name: 'home' })
-  } else {
-    next()
+    if (to.meta.requiresAuth && !currentUserStore.isLoggedIn) {
+      next({ name: 'login' })
+    } else if (to.name === 'login' && currentUserStore.isLoggedIn) {
+      next({ name: 'home' })
+    } else {
+      next()
+    }
+  } catch (error) {
+    console.error('Router error:', error)
+    // Fallback to login if there's an error
+    if (to.name !== 'login') {
+      next({ name: 'login' })
+    } else {
+      next()
+    }
   }
 })
 
