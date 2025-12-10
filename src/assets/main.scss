@@ -52,11 +52,17 @@ body {
 
 .app-shell {
   width: 100%;
-  max-width: 480px; // mobile-first but looks OK on desktop
+  max-width: 100%; // take full width on mobile
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   padding: 12px 12px 18px;
+}
+
+@media (min-width: 768px) {
+  .app-shell {
+    max-width: 640px; // constrain on tablets/desktop
+  }
 }
 
 /* Header */
