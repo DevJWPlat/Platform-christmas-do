@@ -4,6 +4,7 @@ import { useCurrentUserStore } from '../stores/useCurrentUserStore'
 import { supabase } from '../supabaseClient'
 import { usePlayersStore } from '../stores/usePlayersStore'
 import { useRouter } from 'vue-router'
+import { getPlayerImage } from '../utils/playerImages'
 
 const router = useRouter()
 const currentUserStore = useCurrentUserStore()
@@ -167,7 +168,15 @@ onMounted(() => {
         >
           <div class="feed-item-header">
             <div class="feed-item-avatar">
-              {{ item.targetName.charAt(0) }}
+              <img 
+                v-if="getPlayerImage(item.targetName)" 
+                :src="getPlayerImage(item.targetName)" 
+                :alt="item.targetName"
+                class="feed-item-avatar-img"
+              />
+              <span v-else class="feed-item-avatar-fallback">
+                {{ item.targetName.charAt(0) }}
+              </span>
             </div>
             <div class="feed-item-info">
               <div class="feed-item-title">
@@ -239,6 +248,23 @@ onMounted(() => {
   color: #050509;
   flex-shrink: 0;
   font-size: 14px;
+  overflow: hidden;
+  position: relative;
+}
+
+.feed-item-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 999px;
+}
+
+.feed-item-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .feed-item-info {

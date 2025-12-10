@@ -4,6 +4,7 @@ import { usePlayersStore } from '../stores/usePlayersStore'
 import { useCurrentUserStore } from '../stores/useCurrentUserStore'
 import { useRouter } from 'vue-router'
 import { supabase } from '../supabaseClient'
+import { getPlayerImage } from '../utils/playerImages'
 
 const playersStore = usePlayersStore()
 const currentUserStore = useCurrentUserStore()
@@ -105,7 +106,15 @@ const handleLogin = async () => {
             @click="selectUser(player)"
           >
             <div class="player-avatar">
-              {{ player.name.charAt(0) }}
+              <img
+                v-if="getPlayerImage(player.name)"
+                :src="getPlayerImage(player.name)"
+                :alt="player.name"
+                class="player-avatar-img"
+              />
+              <span v-else class="player-avatar-fallback">
+                {{ player.name.charAt(0) }}
+              </span>
             </div>
 
             <div class="player-main">
@@ -113,7 +122,6 @@ const handleLogin = async () => {
                 <span class="player-name">{{ player.name }}</span>
                 <span class="player-tag"> Tap to log in </span>
               </div>
-              <div class="player-meta">You will be able to nominate others & vote.</div>
             </div>
           </button>
         </div>

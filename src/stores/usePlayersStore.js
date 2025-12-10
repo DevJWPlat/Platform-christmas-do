@@ -53,15 +53,33 @@ export const usePlayersStore = defineStore('players', () => {
   }
 
   const triggerMilestonePopup = (player) => {
-    milestoneNotifications.value.push({
+    const milestoneData = {
       id: crypto.randomUUID(),
       playerName: player.name,
       points: player.points,
       action: getMilestoneAction(player.points),
-    })
+    }
+
+    milestoneNotifications.value.push(milestoneData)
 
     // optional: vibrate for effect
     if (navigator.vibrate) navigator.vibrate(150)
+
+    // Open WhatsApp with pre-filled message
+    // Replace with your WhatsApp group number (format: country code + number, no + or spaces)
+    // Example: 447123456789 for UK, or 1234567890 for US
+    const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '447123456789' // Default fallback
+
+    const message = encodeURIComponent(
+      `🎯 MILESTONE REACHED! 🎯\n\n${player.name} just reached ${player.points} points!\n\nConsequence: ${milestoneData.action}\n\nTime to pay up! 🍻`,
+    )
+
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`
+
+    // Open WhatsApp in a new tab/window
+    // On mobile, this will open the WhatsApp app
+    // On desktop, this will open WhatsApp Web
+    window.open(whatsappUrl, '_blank')
   }
 
   const startRealtime = () => {

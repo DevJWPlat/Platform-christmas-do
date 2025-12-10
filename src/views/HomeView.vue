@@ -8,6 +8,7 @@ import VoteNotification from '../components/VoteNotification.vue'
 import { supabase } from '../supabaseClient'
 import MilestonePopup from '../components/MilestonePopup.vue'
 import { useRouter } from 'vue-router'
+import { getPlayerImage } from '../utils/playerImages'
 
 const router = useRouter()
 
@@ -166,16 +167,21 @@ const logout = () => {
             @click="openNominate(player)"
           >
             <div class="player-avatar">
-              {{ player.name.charAt(0) }}
+              <img
+                v-if="getPlayerImage(player.name)"
+                :src="getPlayerImage(player.name)"
+                :alt="player.name"
+                class="player-avatar-img"
+              />
+              <span v-else class="player-avatar-fallback">
+                {{ player.name.charAt(0) }}
+              </span>
             </div>
 
             <div class="player-main">
               <div class="player-name-row">
                 <span class="player-name">{{ player.name }}</span>
                 <span class="player-tag"> Tap to nominate </span>
-              </div>
-              <div class="player-meta">
-                Currently on {{ player.points }} point<span v-if="player.points !== 1">s</span>
               </div>
             </div>
 
