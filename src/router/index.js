@@ -6,6 +6,16 @@ import FeedView from '../views/FeedView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 import { useCurrentUserStore } from '../stores/useCurrentUserStore'
 
+// Handle GitHub Pages 404 redirect format
+// When GitHub Pages serves a 404, it redirects to /?/path
+// We need to extract the path from the query string and navigate to it
+if (window.location.search.includes('?/')) {
+  const path = window.location.search.replace('?/', '').split('&')[0].replace(/~and~/g, '&')
+  if (path) {
+    window.history.replaceState(null, '', import.meta.env.BASE_URL + path)
+  }
+}
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
