@@ -6,19 +6,16 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // This is IMPORTANT for GitHub Pages if you don't use a custom domain yet
-  base: '/platform-christmas-do/',
+  // This is IMPORTANT for GitHub Pages - must match repo name exactly (case-sensitive)
+  base: '/Platform-christmas-do/',
 
   build: {
     outDir: 'docs',
   },
-  plugins: [
-    vue(),
-    vueDevTools(),
-  ],
+  plugins: [vue(), vueDevTools()],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
 })
