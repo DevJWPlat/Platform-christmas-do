@@ -36,14 +36,11 @@ body {
   background: radial-gradient(circle at top, #1a1a2e 0, #0a0a0f 55%);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
+   box-sizing: border-box;
 }
 
-body {
-  min-height: 100vh;
-}
 
 #app {
-  min-height: 100vh;
   display: flex;
   justify-content: center;
 }
@@ -52,32 +49,32 @@ body {
 
 .app-shell {
   width: 100%;
-  max-width: 100%; // take full width on mobile
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 12px 12px 18px;
+  min-height: 100vh;
 }
 
-@media (min-width: 768px) {
-  .app-shell {
-    max-width: 640px; // constrain on tablets/desktop
-  }
-}
 
 /* Header */
+.wrapper {
+  width: 90%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
 .app-header {
   position: sticky;
   top: 0;
   z-index: 20;
-  padding: 8px 4px 10px;
+  padding: 24px 0;
   backdrop-filter: blur(14px);
   background: linear-gradient(to bottom, rgba(10, 10, 15, 0.95), transparent);
   display: flex;
   align-items: center;
   justify-content: space-between;
-
+  
   .app-header-left {
     display: flex;
     align-items: center;
@@ -183,6 +180,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 90%;
+  margin: 0 auto;
 }
 
 /* Section header */
@@ -220,7 +219,7 @@ body {
 .player-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .player-card {
@@ -339,8 +338,9 @@ body {
 /* Bottom hint bar */
 
 .bottom-hint-bar {
-  margin-top: auto;
-  padding-top: 6px;
+  margin-top: 0;
+  padding-top: 24px;
+  padding-bottom: 80px;
 
   .bottom-hint-inner {
     border-radius: var(--radius-xl);
@@ -510,7 +510,7 @@ body {
 .menu-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(3, 3, 6, 0.85);
+  background: rgba(3, 3, 6, 0.243);
   backdrop-filter: blur(18px);
   z-index: 50;
   display: flex;
@@ -521,7 +521,6 @@ body {
 
 .menu-panel {
   width: 100%;
-  max-width: 320px;
   background: radial-gradient(circle at top, #1e1e2e 0, #151520 60%);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);

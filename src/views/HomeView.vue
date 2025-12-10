@@ -99,19 +99,21 @@ const logout = () => {
 <template>
   <div class="app-shell">
     <header class="app-header">
-      <div class="app-header-left">
-        <router-link :to="{ name: 'home' }" class="logo-pill">
-          <img src="/logo.svg" alt="Logo" class="logo-img" />
-        </router-link>
-        <div class="app-title">
-          <span class="app-title-main">Christmas Do</span>
-          <span class="app-title-sub"> Logged in as {{ currentUser?.name }} </span>
+        <div class="wrapper">
+            <div class="app-header-left">
+              <router-link :to="{ name: 'home' }" class="logo-pill">
+                <img src="/logo.svg" alt="Logo" class="logo-img" />
+              </router-link>
+              <div class="app-title">
+                <span class="app-title-main">Christmas Do</span>
+                <span class="app-title-sub"> Logged in as {{ currentUser?.name }} </span>
+              </div>
+            </div>
+      
+            <button class="icon-button" type="button" @click="toggleMenu">
+              <span></span>
+            </button>
         </div>
-      </div>
-
-      <button class="icon-button" type="button" @click="toggleMenu">
-        <span></span>
-      </button>
     </header>
 
     <!-- Hamburger Menu -->

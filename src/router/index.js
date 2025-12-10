@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RulesView from '../views/RulesView.vue'
 import FeedView from '../views/FeedView.vue'
+import NotFoundView from '../views/NotFoundView.vue'
 import { useCurrentUserStore } from '../stores/useCurrentUserStore'
 
 const router = createRouter({
@@ -30,6 +31,12 @@ const router = createRouter({
       name: 'feed',
       component: FeedView,
       meta: { requiresAuth: true },
+    },
+    // Catch-all 404 route - must be last
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: NotFoundView,
     },
   ],
 })
