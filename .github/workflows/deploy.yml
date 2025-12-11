@@ -10,13 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Build your site
-        run: |
-          npm install
-          npm run build
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the site
+        run: npm run build
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
@@ -24,4 +25,4 @@ jobs:
           apiToken: M6CZI4yRFUKtlTrES2Xmm73kkprWEX0eNyRna-SI
           accountId: 0a7ad68594f35e5283ac58014a6b49ac
           projectName: platform-christmas-do
-          directory: .
+          directory: dist
