@@ -1,20 +1,22 @@
 // src/utils/slack.js
-const webhookUrl = import.meta.env.VITE_SLACK_WEBHOOK_URL
+
+const FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/slack`
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 async function postToSlack(payload) {
-  if (!webhookUrl) {
-    console.warn('Slack webhook URL is not set (VITE_SLACK_WEBHOOK_URL)')
-    return
-  }
-
   try {
-    const res = await fetch(webhookUrl, {
+    const res = await fetch(FUNCTION_URL, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // anon key so Supabase knows it's your project
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
       body: JSON.stringify(payload),
     })
 
     if (!res.ok) {
-      console.error('Slack webhook error', await res.text())
+      console.error('Slack function error', res.status, await res.text())
     }
   } catch (err) {
     console.error('Failed to send Slack message', err)
@@ -52,30 +54,27 @@ export function sendNominationToSlack({ nominee, nominator, reason }) {
   return postToSlack(payload)
 }
 
-// 🎯 Milestone reached – matches your call:
-// sendMilestoneToSlack(player.name, player.points, milestoneData.action)
 export function sendMilestoneToSlack(playerName, points, action) {
   const payload = {
     blocks: [
       {
-        type: "header",
+        type: 'section',
         text: {
-          type: "plain_text",
-          text: "Milestone reached 🎉",
-          emoji: true,
+          type: 'mrkdwn',
+          text: '*Milestone reached :tada:*',
         },
       },
       {
-        type: "section",
+        type: 'section',
         text: {
-          type: "mrkdwn",
+          type: 'mrkdwn',
           text: `*${playerName}* has now reached *${points} points*`,
         },
       },
       {
-        type: "section",
+        type: 'section',
         text: {
-          type: "mrkdwn",
+          type: 'mrkdwn',
           text: `*Forfeit:*\n>${action}`,
         },
       },
@@ -84,4 +83,3 @@ export function sendMilestoneToSlack(playerName, points, action) {
 
   return postToSlack(payload)
 }
-
