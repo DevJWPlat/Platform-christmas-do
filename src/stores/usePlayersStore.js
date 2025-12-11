@@ -78,6 +78,8 @@ export const usePlayersStore = defineStore('players', () => {
 
     // Send Slack notification
     await sendMilestoneToSlack(player.name, player.points, milestoneData.action)
+    console.log("SENDING MILESTONE TO SLACK:", player.name, player.points, milestoneData.action)
+
   }
 
   const startRealtime = () => {

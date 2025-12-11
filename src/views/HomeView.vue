@@ -9,6 +9,8 @@ import { supabase } from '../supabaseClient'
 import MilestonePopup from '../components/MilestonePopup.vue'
 import { useRouter } from 'vue-router'
 import { getPlayerImage } from '../utils/playerImages'
+import { sendNominationToSlack } from '../utils/slack'
+
 
 const router = useRouter()
 
@@ -70,6 +72,17 @@ const handleSubmitNomination = async ({ playerId, reason }) => {
     return
   }
 
+  // 🔔 Send Slack message (fire-and-forget, no need to await if you don't want)
+  const nominee = selectedPlayer.value?.name || 'Unknown'
+  const nominator = currentUser.value.name || 'Unknown'
+
+  sendNominationToSlack({
+    nominee,
+    nominator,
+    reason,
+  })
+
+
   // close modal
   selectedPlayer.value = null
   isNominateOpen.value = false
@@ -94,6 +107,9 @@ const logout = () => {
   closeMenu()
   router.push({ name: 'login' })
 }
+
+
+
 </script>
 
 <template>
