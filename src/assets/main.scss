@@ -37,21 +37,25 @@ body {
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
+  font-size: 16px;
 }
 
 #app {
-  display: flex;
-  justify-content: center;
-  display: block;
+  min-height: 100vh;
 }
 
 /* App shell */
 
 .app-shell {
   width: 100%;
+  max-width: 480px;          /* nice max for phones & small tablets */
+  min-height: 100dvh;        /* use dynamic viewport height (better on mobile) */
+  margin: 0 auto;            /* centre on desktop / big screens */
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  @media (min-width: 767px) {
+    max-width: none;
+  }
 }
 
 /* Header */
@@ -222,6 +226,7 @@ body {
   flex-wrap: wrap;
 }
 
+/* Mobile-first: 1 column */
 .player-card {
   width: 100%;
   display: flex;
@@ -238,14 +243,18 @@ body {
     box-shadow 0.12s ease,
     border-color 0.12s ease,
     background 0.12s ease;
-  @media (min-width: 1024px) {
-    /* Only on actual big screens (laptops / big tablets) show 2 columns */
-    width: calc((100% - 24px) / 2);
-  }
+
   &:active {
     transform: scale(0.97) translateY(1px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
   }
+
+  /* Only go 2-column on actual big screens */
+  @media (min-width: 1024px) {
+    width: calc((100% - 24px) / 2);
+  }
+
+
 
   .player-avatar {
     width: 40px;
