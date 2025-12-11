@@ -159,7 +159,7 @@ const logout = () => {
             <h1 class="section-title">Players</h1>
             <p class="section-tagline">Tap a player to nominate a point</p>
           </div>
-          <div class="points-legend-pill">1 point = 1 shot</div>
+          <div class="points-legend-pill">Rank #1 isn't where you want to be</div>
         </div>
 
         <div class="player-list">
