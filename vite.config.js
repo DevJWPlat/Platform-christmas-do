@@ -7,8 +7,8 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 // https://vite.dev/config/
 export default defineConfig({
   // This is IMPORTANT for GitHub Pages - must match repo name exactly (case-sensitive)
-  base: '/Platform-christmas-do/'
-  //base: '/', 
+  //base: '/Platform-christmas-do/'
+  base: '/', 
 
   build: {
     outDir: 'docs',
