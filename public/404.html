@@ -22,25 +22,23 @@
     <p>Loading…</p>
     <script>
       (function () {
-        // This runs on GitHub's 404
         var l = window.location
-
-        // Strip the repo base from the path
-        var base = '/'
-        var path = l.pathname.startsWith(base)
-          ? l.pathname.slice(base.length)
-          : l.pathname
-
-        // If there is a path (like /login, /rules, etc), redirect to
-        // /Platform-christmas-do/?/that/path so index.html is served
+        var path = l.pathname
+    
+        // strip trailing slash
+        if (path.length > 1 && path.endsWith('/')) {
+          path = path.slice(0, -1)
+        }
+    
         if (path && path !== '/') {
-          var newUrl = base + '/?/' + path.replace(/^\//, '') + l.search + l.hash
+          // redirect to /?/<path> so index.html is served
+          var newUrl = '/?/' + path.replace(/^\//, '') + l.search + l.hash
           l.replace(newUrl)
         } else {
-          // Just go to the SPA root
-          l.replace(base + '/')
+          // just go to SPA root
+          l.replace('/')
         }
       })()
-    </script>
+    </script>    
   </body>
 </html>
