@@ -24,4 +24,4 @@ jobs:
           apiToken: M6CZI4yRFUKtlTrES2Xmm73kkprWEX0eNyRna-SI
           accountId: 0a7ad68594f35e5283ac58014a6b49ac
           projectName: platform-christmas-do
-          directory: ./dist
+          directory: .
