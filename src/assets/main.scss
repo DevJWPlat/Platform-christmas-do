@@ -223,7 +223,7 @@ body {
 }
 
 .player-card {
-  width: calc((100% - 24px) / 2);
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -238,8 +238,9 @@ body {
     box-shadow 0.12s ease,
     border-color 0.12s ease,
     background 0.12s ease;
-  @media (max-width: 767px) {
-    width: 100%;
+  @media (min-width: 1024px) {
+    /* Only on actual big screens (laptops / big tablets) show 2 columns */
+    width: calc((100% - 24px) / 2);
   }
   &:active {
     transform: scale(0.97) translateY(1px);
