@@ -101,7 +101,11 @@ onMounted(() => {
           </div>
         </div>
 
-        <button class="icon-button" type="button" @click="toggleMenu">
+        <button 
+          :class="['icon-button', { 'icon-button-active': isMenuOpen }]" 
+          type="button" 
+          @click="toggleMenu"
+        >
           <span></span>
         </button>
       </div>
@@ -119,7 +123,7 @@ onMounted(() => {
           <nav class="menu-nav">
             <button 
               class="menu-item" 
-              @click="navigateTo('/home')"
+              @click="navigateTo({ name: 'home' })"
             >
               <span class="menu-item-icon">📊</span>
               <span class="menu-item-text">Leaderboard</span>
@@ -127,7 +131,7 @@ onMounted(() => {
             
             <button 
               class="menu-item" 
-              @click="navigateTo('/feed')"
+              @click="navigateTo({ name: 'feed' })"
             >
               <span class="menu-item-icon">⚡</span>
               <span class="menu-item-text">Activity Feed</span>
@@ -135,7 +139,7 @@ onMounted(() => {
             
             <button 
               class="menu-item" 
-              @click="navigateTo('/rules')"
+              @click="navigateTo({ name: 'rules' })"
             >
               <span class="menu-item-icon">📜</span>
               <span class="menu-item-text">Points Rules</span>

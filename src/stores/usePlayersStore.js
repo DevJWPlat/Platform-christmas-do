@@ -2,8 +2,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { supabase } from '../supabaseClient'
+import { sendMilestoneToSlack } from '../utils/slack'
 
-const milestones = [1, 5, 10, 15, 20, 25]
+const milestones = [1, 3, 5, 7, 10, 12, 15, 17, 20, 25, 30]
 
 export const usePlayersStore = defineStore('players', () => {
   const players = ref([])
@@ -36,23 +37,33 @@ export const usePlayersStore = defineStore('players', () => {
   const getMilestoneAction = (points) => {
     switch (points) {
       case 1:
+        return 'Drink two fingers worth of your current drink'
+      case 3:
         return 'Take a shot'
       case 5:
-        return 'Take a shot'
+        return 'Neck half your drink'
+      case 7:
+        return 'Take a photo with the team'
       case 10:
+        return 'The team chooses your next drink'
+      case 12:
         return 'Down your drink'
       case 15:
-        return 'Your team will invent a forfeit for you'
-      case 20:
-        return 'Buy a round'
-      case 25:
         return 'Take a shot'
+      case 17:
+        return 'The team will create you a forfeit / rule'
+      case 20:
+        return 'Let the group assign you a “role” (Navigation Officer, Drink Guardian, etc) for the rest of the night.'
+      case 25:
+        return 'Buy a round'
+      case 30:
+        return 'Take a shot, then head to the dance floor'
       default:
-        return 'Forfeit reached!'
+        return 'Milestone reached!'
     }
   }
 
-  const triggerMilestonePopup = (player) => {
+  const triggerMilestonePopup = async (player) => {
     const milestoneData = {
       id: crypto.randomUUID(),
       playerName: player.name,
@@ -65,21 +76,8 @@ export const usePlayersStore = defineStore('players', () => {
     // optional: vibrate for effect
     if (navigator.vibrate) navigator.vibrate(150)
 
-    // Open WhatsApp with pre-filled message
-    // Replace with your WhatsApp group number (format: country code + number, no + or spaces)
-    // Example: 447123456789 for UK, or 1234567890 for US
-    const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '447123456789' // Default fallback
-
-    const message = encodeURIComponent(
-      `🎯 MILESTONE REACHED! 🎯\n\n${player.name} just reached ${player.points} points!\n\nConsequence: ${milestoneData.action}\n\nTime to pay up! 🍻`,
-    )
-
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`
-
-    // Open WhatsApp in a new tab/window
-    // On mobile, this will open the WhatsApp app
-    // On desktop, this will open WhatsApp Web
-    window.open(whatsappUrl, '_blank')
+    // Send Slack notification
+    await sendMilestoneToSlack(player.name, player.points, milestoneData.action)
   }
 
   const startRealtime = () => {

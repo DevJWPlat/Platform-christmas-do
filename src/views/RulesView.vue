@@ -7,12 +7,21 @@ const router = useRouter()
 const currentUserStore = useCurrentUserStore()
 
 const rules = [
-  { points: 1, action: 'Take a shot' },
-  { points: 5, action: 'Take a shot' },
-  { points: 10, action: 'Down your drink' },
-  { points: 15, action: 'The team will create you a forfeit / rule' },
-  { points: 20, action: 'Buy a round' },
-  { points: 25, action: 'Take a shot' },
+  { points: 1, action: 'Drink two fingers worth of your current drink' },
+  { points: 3, action: 'Take a shot' },
+  { points: 5, action: 'Neck half your drink' },
+  { points: 7, action: 'Take a photo with the team' },
+  { points: 10, action: 'The team chooses your next drink' },
+  { points: 12, action: 'Down your drink' },
+  { points: 15, action: 'Take a shot' },
+  { points: 17, action: 'The team will create you a forfeit / rule' },
+  {
+    points: 20,
+    action:
+      'Let the group assign you a "role" (Navigation Officer, Drink Guardian, etc) for the rest of the night.',
+  },
+  { points: 25, action: 'Buy a round' },
+  { points: 30, action: 'Take a shot, then head to the dance floor' },
 ]
 
 const isMenuOpen = ref(false)
@@ -51,7 +60,11 @@ const logout = () => {
           </div>
         </div>
 
-        <button class="icon-button" type="button" @click="toggleMenu">
+        <button
+          :class="['icon-button', { 'icon-button-active': isMenuOpen }]"
+          type="button"
+          @click="toggleMenu"
+        >
           <span></span>
         </button>
       </div>
@@ -67,17 +80,17 @@ const logout = () => {
           </div>
 
           <nav class="menu-nav">
-            <button class="menu-item" @click="navigateTo('/home')">
+            <button class="menu-item" @click="navigateTo({ name: 'home' })">
               <span class="menu-item-icon">📊</span>
               <span class="menu-item-text">Leaderboard</span>
             </button>
 
-            <button class="menu-item" @click="navigateTo('/feed')">
+            <button class="menu-item" @click="navigateTo({ name: 'feed' })">
               <span class="menu-item-icon">⚡</span>
               <span class="menu-item-text">Activity Feed</span>
             </button>
 
-            <button class="menu-item" @click="navigateTo('/rules')">
+            <button class="menu-item" @click="navigateTo({ name: 'rules' })">
               <span class="menu-item-icon">📜</span>
               <span class="menu-item-text">Points Rules</span>
             </button>
@@ -109,7 +122,7 @@ const logout = () => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .rules-intro {
   margin: 20px 0;
   font-size: 1rem;
@@ -126,7 +139,7 @@ const logout = () => {
 .rules-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 24px;
 }
 
 .rule-card {
@@ -137,16 +150,29 @@ const logout = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
+  flex-direction: column;
+  @media (min-width: 1024px) {
+    /* Only on actual big screens (laptops / big tablets) show 2 columns */
+    flex-direction: row;
+    gap: 30px;
+  }
 }
 
 .rule-points {
-  font-size: 1.1rem;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-main);
+  min-width: fit-content;
 }
 
 .rule-action {
   color: var(--text-muted);
   font-weight: 500;
+  text-align: center;
+  font-size: 16px;
+  @media (min-width: 1024px) {
+    text-align: right;
+  }
 }
 </style>

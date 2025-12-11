@@ -110,7 +110,11 @@ const logout = () => {
           </div>
         </div>
 
-        <button class="icon-button" type="button" @click="toggleMenu">
+        <button
+          :class="['icon-button', { 'icon-button-active': isMenuOpen }]"
+          type="button"
+          @click="toggleMenu"
+        >
           <span></span>
         </button>
       </div>
@@ -126,17 +130,17 @@ const logout = () => {
           </div>
 
           <nav class="menu-nav">
-            <button class="menu-item" @click="navigateTo('/home')">
+            <button class="menu-item" @click="navigateTo({ name: 'home' })">
               <span class="menu-item-icon">📊</span>
               <span class="menu-item-text">Leaderboard</span>
             </button>
 
-            <button class="menu-item" @click="navigateTo('/feed')">
+            <button class="menu-item" @click="navigateTo({ name: 'feed' })">
               <span class="menu-item-icon">⚡</span>
               <span class="menu-item-text">Activity Feed</span>
             </button>
 
-            <button class="menu-item" @click="navigateTo('/rules')">
+            <button class="menu-item" @click="navigateTo({ name: 'rules' })">
               <span class="menu-item-icon">📜</span>
               <span class="menu-item-text">Points Rules</span>
             </button>
@@ -167,8 +171,9 @@ const logout = () => {
             v-for="player in rankedPlayers"
             :key="player.id"
             type="button"
-            class="player-card"
-            @click="openNominate(player)"
+            :class="['player-card', { 'player-card-disabled': player.id === currentUser?.id }]"
+            :disabled="player.id === currentUser?.id"
+            @click="player.id !== currentUser?.id && openNominate(player)"
           >
             <div class="player-avatar">
               <img
@@ -185,7 +190,9 @@ const logout = () => {
             <div class="player-main">
               <div class="player-name-row">
                 <span class="player-name">{{ player.name }}</span>
-                <span class="player-tag"> Tap to nominate </span>
+                <span v-if="player.id !== currentUser?.id" class="player-tag">
+                  Tap to nominate
+                </span>
               </div>
             </div>
 
@@ -204,7 +211,7 @@ const logout = () => {
               <strong>First point</strong> of the night triggers a shot.
             </p>
             <button class="bottom-hint-cta" type="button" @click="$router.push('/rules')">
-              View point rules
+              View point milestones
             </button>
           </div>
         </div>

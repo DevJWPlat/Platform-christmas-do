@@ -32,7 +32,7 @@ watch(
   <div v-if="showing" class="milestone-backdrop">
     <div class="milestone-popup">
       <div class="milestone-header">
-        <div class="milestone-icon">🎯</div>
+        <div class="milestone-icon">🍻</div>
         <h2 class="milestone-title">Milestone Reached!</h2>
       </div>
       <div class="milestone-content">
