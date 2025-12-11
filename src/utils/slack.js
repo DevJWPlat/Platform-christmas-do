@@ -2,15 +2,22 @@
  * Utility function to send messages to Slack via webhook
  */
 
-const SLACK_WEBHOOK_URL =
-  import.meta.env.VITE_SLACK_WEBHOOK_URL ||
-  'REPLACED_WITH_ENV_VAR'
+const SLACK_WEBHOOK_URL = import.meta.env.VITE_SLACK_WEBHOOK_URL
+
+if (!SLACK_WEBHOOK_URL) {
+  console.warn('VITE_SLACK_WEBHOOK_URL is not set. Slack notifications will be disabled.')
+}
 
 /**
  * Send a simple text message to Slack
  * @param {string} text - The message text to send
  */
 export const sendSlackMessage = async (text) => {
+  if (!SLACK_WEBHOOK_URL) {
+    console.warn('Slack webhook URL not configured')
+    return false
+  }
+
   try {
     const response = await fetch(SLACK_WEBHOOK_URL, {
       method: 'POST',
@@ -39,6 +46,11 @@ export const sendSlackMessage = async (text) => {
  * @param {string} action - The consequence/action for this milestone
  */
 export const sendMilestoneToSlack = async (playerName, points, action) => {
+  if (!SLACK_WEBHOOK_URL) {
+    console.warn('Slack webhook URL not configured')
+    return false
+  }
+
   try {
     const payload = {
       blocks: [
