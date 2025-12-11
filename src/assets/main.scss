@@ -36,9 +36,8 @@ body {
   background: radial-gradient(circle at top, #1a1a2e 0, #0a0a0f 55%);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
-   box-sizing: border-box;
+  box-sizing: border-box;
 }
-
 
 #app {
   display: flex;
@@ -53,7 +52,6 @@ body {
   flex-direction: column;
   min-height: 100vh;
 }
-
 
 /* Header */
 .wrapper {
@@ -74,7 +72,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  
+
   .app-header-left {
     display: flex;
     align-items: center;
@@ -218,11 +216,13 @@ body {
 
 .player-list {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-direction: row;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
 .player-card {
+  width: calc((100% - 24px) / 2);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -237,7 +237,9 @@ body {
     box-shadow 0.12s ease,
     border-color 0.12s ease,
     background 0.12s ease;
-
+  @media (max-width: 767px) {
+    width: 100%;
+  }
   &:active {
     transform: scale(0.97) translateY(1px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
@@ -516,35 +518,83 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
-  padding: 12px;
+  padding: 0;
+  transition: opacity 0.25s ease;
 }
 
 .menu-panel {
-  width: 100%;
+  width: 80%;
+  height: 100%;
   background: radial-gradient(circle at top, #1e1e2e 0, #151520 60%);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xl);
   box-shadow: 0 22px 45px rgba(0, 0, 0, 0.9);
   overflow: hidden;
-  animation: slideIn 0.2s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+/* Menu transition animations */
+.menu-enter-active {
+  transition: opacity 0.25s ease;
+}
+
+.menu-enter-active .menu-panel {
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.menu-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.menu-leave-active .menu-panel {
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.25s ease;
+}
+
+.menu-enter-from {
+  opacity: 0;
+}
+
+.menu-enter-from .menu-panel {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.menu-enter-to {
+  opacity: 1;
+}
+
+.menu-enter-to .menu-panel {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.menu-leave-from {
+  opacity: 1;
+}
+
+.menu-leave-from .menu-panel {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.menu-leave-to {
+  opacity: 0;
+}
+
+.menu-leave-to .menu-panel {
+  transform: translateX(100%);
+  opacity: 0;
 }
 
 .menu-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 18px;
+  padding: 24px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -567,14 +617,13 @@ body {
 .menu-nav {
   display: flex;
   flex-direction: column;
-  padding: 8px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 24px 24px 0 24px;
   border: none;
   background: transparent;
   border-radius: 12px;
@@ -583,6 +632,9 @@ body {
   text-align: left;
   cursor: pointer;
   transition: background 0.15s ease;
+  &:nth-child(3) {
+    padding-bottom: 24px;
+  }
 }
 
 .menu-item:hover {
@@ -615,4 +667,9 @@ body {
   height: 1px;
   background: var(--border-subtle);
   margin: 8px 0;
+}
+
+.logout {
+  position: absolute;
+  bottom: 24px;
 }

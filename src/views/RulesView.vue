@@ -58,38 +58,40 @@ const logout = () => {
     </header>
 
     <!-- Hamburger Menu -->
-    <div v-if="isMenuOpen" class="menu-backdrop" @click="closeMenu">
-      <div class="menu-panel" @click.stop>
-        <div class="menu-header">
-          <h3 class="menu-title">Menu</h3>
-          <button class="menu-close" @click="closeMenu">✕</button>
+    <Transition name="menu">
+      <div v-if="isMenuOpen" class="menu-backdrop" @click="closeMenu">
+        <div class="menu-panel" @click.stop>
+          <div class="menu-header">
+            <h3 class="menu-title">Menu</h3>
+            <button class="menu-close" @click="closeMenu">✕</button>
+          </div>
+
+          <nav class="menu-nav">
+            <button class="menu-item" @click="navigateTo('/home')">
+              <span class="menu-item-icon">📊</span>
+              <span class="menu-item-text">Leaderboard</span>
+            </button>
+
+            <button class="menu-item" @click="navigateTo('/feed')">
+              <span class="menu-item-icon">⚡</span>
+              <span class="menu-item-text">Activity Feed</span>
+            </button>
+
+            <button class="menu-item" @click="navigateTo('/rules')">
+              <span class="menu-item-icon">📜</span>
+              <span class="menu-item-text">Points Rules</span>
+            </button>
+
+            <div class="menu-divider"></div>
+
+            <button class="menu-item menu-item-danger logout" @click="logout">
+              <span class="menu-item-icon">↩️</span>
+              <span class="menu-item-text">Logout</span>
+            </button>
+          </nav>
         </div>
-
-        <nav class="menu-nav">
-          <button class="menu-item" @click="navigateTo('/home')">
-            <span class="menu-item-icon">🏠</span>
-            <span class="menu-item-text">Leaderboard</span>
-          </button>
-
-          <button class="menu-item" @click="navigateTo('/feed')">
-            <span class="menu-item-icon">📰</span>
-            <span class="menu-item-text">Activity Feed</span>
-          </button>
-
-          <button class="menu-item" @click="navigateTo('/rules')">
-            <span class="menu-item-icon">📋</span>
-            <span class="menu-item-text">Points Rules</span>
-          </button>
-
-          <div class="menu-divider"></div>
-
-          <button class="menu-item menu-item-danger" @click="logout">
-            <span class="menu-item-icon">🚪</span>
-            <span class="menu-item-text">Logout</span>
-          </button>
-        </nav>
       </div>
-    </div>
+    </Transition>
 
     <main class="app-main rules-page">
       <p class="rules-intro">
