@@ -7,21 +7,21 @@ const router = useRouter()
 const currentUserStore = useCurrentUserStore()
 
 const rules = [
-  { points: 1, action: 'Drink two fingers worth of your current drink' },
-  { points: 3, action: 'Take a shot' },
-  { points: 5, action: 'Neck half your drink' },
-  { points: 7, action: 'Take a photo with the team' },
-  { points: 10, action: 'The team chooses your next drink' },
-  { points: 12, action: 'Down your drink' },
-  { points: 15, action: 'Take a shot' },
+  { points: 1, action: 'Drink two fingers worth of your current drink or speak in a silly accent for 30 seconds.' },
+  { points: 3, action: 'Take a shot or do 5 star jumps' },
+  { points: 5, action: 'Neck half your drink or ask a stranger for a high five' },
+  { points: 7, action: 'Take a photo with the team or get a selfie with a stranger' },
+  { points: 10, action: 'The team chooses your next drink or drink with only your weak hand for the rest of the night (any strong hand drinking will result in a forfeit)' },
+  { points: 12, action: 'Down your drink or do charades to the group (if the group cant guess, you must do a forfeit)' },
+  { points: 15, action: 'Take a shot or do a slut drop' },
   { points: 17, action: 'The team will create you a forfeit / rule' },
   {
     points: 20,
     action:
       'Let the group assign you a "role" (Navigation Officer, Drink Guardian, etc) for the rest of the night.',
   },
-  { points: 25, action: 'Buy a round' },
-  { points: 30, action: 'Take a shot, then head to the dance floor' },
+  { points: 25, action: 'Buy a round or do a shot with a stranger' },
+  { points: 30, action: 'Take a shot, then head to the dance floor or do 5 press ups, 5 star jumps and head to the dance floor' },
 ]
 
 const isMenuOpen = ref(false)

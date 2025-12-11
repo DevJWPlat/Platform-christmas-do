@@ -37,27 +37,27 @@ export const usePlayersStore = defineStore('players', () => {
   const getMilestoneAction = (points) => {
     switch (points) {
       case 1:
-        return 'Drink two fingers worth of your current drink'
+        return 'Drink two fingers worth of your current drink or speak in a silly accent for 30 seconds.'
       case 3:
-        return 'Take a shot'
+        return 'Take a shot or do 5 star jumps'
       case 5:
-        return 'Neck half your drink'
+        return 'Neck half your drink or ask a stranger for a high five'
       case 7:
-        return 'Take a photo with the team'
+        return 'Take a photo with the team or get a selfie with a stranger'
       case 10:
-        return 'The team chooses your next drink'
+        return 'The team chooses your next drink or drink with only your weak hand for the rest of the night (any strong hand drinking will result in a forfeit)'
       case 12:
-        return 'Down your drink'
+        return 'Down your drink or do charades to the group (if the group cant guess, you must do a forfeit)'
       case 15:
-        return 'Take a shot'
+        return 'Take a shot or do a slut drop'
       case 17:
         return 'The team will create you a forfeit / rule'
       case 20:
         return 'Let the group assign you a “role” (Navigation Officer, Drink Guardian, etc) for the rest of the night.'
       case 25:
-        return 'Buy a round'
+        return 'Buy a round or do a shot with a stranger'
       case 30:
-        return 'Take a shot, then head to the dance floor'
+        return 'Take a shot, then head to the dance floor or do 5 press ups, 5 star jumps and head to the dance floor'
       default:
         return 'Milestone reached!'
     }

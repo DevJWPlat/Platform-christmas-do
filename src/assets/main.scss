@@ -414,6 +414,12 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: 6px;
+    flex-direction: column;
+    @media (min-width: 600px) {
+      /* Only on actual big screens (laptops / big tablets) show 2 columns */
+      flex-direction: row;
+      gap: 30px;
+    }
 
     .bottom-hint-text {
       font-size: 11px;
@@ -434,6 +440,11 @@ body {
       background: radial-gradient(circle at left, rgba(255, 75, 129, 0.35), transparent 55%);
       color: var(--text-main);
       cursor: pointer;
+      width: 80%;
+      @media (min-width: 600px) {
+        /* Only on actual big screens (laptops / big tablets) show 2 columns */
+        width: auto;
+      }
     }
   }
 }
