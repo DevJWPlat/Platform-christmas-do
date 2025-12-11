@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting…</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+          sans-serif;
+        background: #050510;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Loading…</p>
+    <script>
+      (function () {
+        // This runs on GitHub's 404
+        var l = window.location
+
+        // Strip the repo base from the path
+        var base = '/Platform-christmas-do'
+        var path = l.pathname.startsWith(base)
+          ? l.pathname.slice(base.length)
+          : l.pathname
+
+        // If there is a path (like /login, /rules, etc), redirect to
+        // /Platform-christmas-do/?/that/path so index.html is served
+        if (path && path !== '/') {
+          var newUrl = base + '/?/' + path.replace(/^\//, '') + l.search + l.hash
+          l.replace(newUrl)
+        } else {
+          // Just go to the SPA root
+          l.replace(base + '/')
+        }
+      })()
+    </script>
+  </body>
+</html>
