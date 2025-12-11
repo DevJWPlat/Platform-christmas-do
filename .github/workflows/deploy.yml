@@ -10,15 +10,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # --------------------------------------------------
+      # 1. CHECKOUT REPO
+      # --------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install  dependencies
+      # --------------------------------------------------
+      # 2. DEBUG: SHOW WHERE GITHUB ACTIONS IS RUNNING
+      # --------------------------------------------------
+      - name: Debug - Print working directory
+        run: pwd
+
+      - name: Debug - List all repo files
+        run: ls -R .
+
+      # --------------------------------------------------
+      # 3. INSTALL + BUILD
+      # --------------------------------------------------
+      - name: Install dependencies
         run: npm ci
 
       - name: Build the site
         run: npm run build
 
+      # --------------------------------------------------
+      # 4. DEBUG: CHECK IF DIST EXISTS AFTER BUILD
+      # --------------------------------------------------
+      - name: Debug - Check dist folder
+        run: |
+          echo "Listing dist folder..."
+          ls -R dist || echo "⚠️ dist folder NOT FOUND"
+
+      # --------------------------------------------------
+      # 5. DEPLOY TO CLOUDFLARE PAGES
+      # --------------------------------------------------
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
