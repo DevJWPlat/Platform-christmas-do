@@ -113,18 +113,14 @@ export const usePlayersStore = defineStore('players', () => {
    * the NEW value hits a milestone and if so, trigger popup + Slack.
    */
   const handlePointsChange = (player, oldPoints, newPoints) => {
-    console.log(
-      `[Milestones] Points changed for ${player.name}: ${oldPoints} -> ${newPoints}`,
-    )
+    console.log(`[Milestones] Points changed for ${player.name}: ${oldPoints} -> ${newPoints}`)
 
     // Only care about actual changes
     if (oldPoints === newPoints) return
 
     // Only fire if the NEW value is a milestone
     if (milestones.includes(newPoints)) {
-      console.log(
-        `[Milestones] ${player.name} hit milestone ${newPoints} – triggering popup`,
-      )
+      console.log(`[Milestones] ${player.name} hit milestone ${newPoints} – triggering popup`)
       triggerMilestonePopup(player)
     }
   }
@@ -248,6 +244,7 @@ export const usePlayersStore = defineStore('players', () => {
     rankedPlayers,
     loading,
     // lifecycle helpers
+    loadPlayers,
     initPlayers,
     startRealtime,
     stopRealtime,

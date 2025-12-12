@@ -8,12 +8,26 @@ export const useVotesStore = defineStore('votes', () => {
   const nominationNotifications = ref([]) // popup queue
   const subscription = ref(null)
 
-  const enqueueNomination = (voteRow) => {
+  const enqueueNomination = async (voteRow) => {
+    // fetch names
+    const { data: players, error } = await supabase
+      .from('players')
+      .select('id, name')
+      .in('id', [voteRow.created_by_id, voteRow.target_id])
+  
+    if (error) {
+      console.error('Failed to fetch player names', error)
+      return
+    }
+  
+    const by = players.find(p => p.id === voteRow.created_by_id)?.name || 'Someone'
+    const target = players.find(p => p.id === voteRow.target_id)?.name || 'Someone'
+  
     nominationNotifications.value.push({
       id: voteRow.id,
-      targetId: voteRow.target_id,
-      createdById: voteRow.created_by_id,
       reason: voteRow.reason,
+      createdByName: by,
+      targetName: target,
       expiresAt: voteRow.expires_at,
       status: voteRow.status,
     })
@@ -21,31 +35,27 @@ export const useVotesStore = defineStore('votes', () => {
 
   const startRealtime = () => {
     if (subscription.value) return
-  
+
     console.log('[votes] starting realtime…')
-  
+
     subscription.value = supabase
       .channel('votes-changes')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'votes' },
-        (payload) => {
-          console.log('[votes] realtime INSERT payload:', payload)
-  
+        async (payload) => {
           const vote = payload.new
           if (!vote) return
-  
           if (vote.status && vote.status !== 'pending') return
-  
-          enqueueNomination(vote)
-          console.log('[votes] queued nominationNotifications length:', nominationNotifications.value.length)
+      
+          await enqueueNomination(vote)
         },
       )
+      
       .subscribe((status) => {
         console.log('[votes] channel status:', status)
       })
   }
-  
 
   const stopRealtime = () => {
     if (subscription.value) {
@@ -56,9 +66,9 @@ export const useVotesStore = defineStore('votes', () => {
 
   const acceptNomination = async (voteId) => {
     const currentUserStore = useCurrentUserStore()
-    const resolverId = currentUserStore.user?.id || null
+    const resolverName = currentUserStore.user?.name || 'Unknown'
 
-    // Fetch vote first (safer than fetching after update)
+    // fetch vote first
     const { data: voteRow, error: fetchErr } = await supabase
       .from('votes')
       .select('target_id, status')
@@ -68,19 +78,19 @@ export const useVotesStore = defineStore('votes', () => {
     if (fetchErr) throw fetchErr
     if (voteRow?.status && voteRow.status !== 'pending') return
 
-    // Mark vote accepted
+    // mark accepted (WRITE NAME INTO resolved_by_id)
     const { error: voteErr } = await supabase
       .from('votes')
       .update({
         status: 'accepted',
         resolved_at: new Date().toISOString(),
-        resolved_by_id: resolverId,
+        resolved_by_id: resolverName, // ✅ option A
       })
       .eq('id', voteId)
 
     if (voteErr) throw voteErr
 
-    // OPTIONAL: add a point to the target player
+    // add a point to the target player
     if (voteRow?.target_id) {
       const { data: player, error: pErr } = await supabase
         .from('players')
@@ -93,23 +103,25 @@ export const useVotesStore = defineStore('votes', () => {
         return
       }
 
-      await supabase
+      const { error: upErr } = await supabase
         .from('players')
         .update({ points: (player.points || 0) + 1 })
         .eq('id', voteRow.target_id)
+
+      if (upErr) throw upErr
     }
   }
 
   const declineNomination = async (voteId) => {
     const currentUserStore = useCurrentUserStore()
-    const resolverId = currentUserStore.user?.id || null
+    const resolverName = currentUserStore.user?.name || 'Unknown'
 
     const { error } = await supabase
       .from('votes')
       .update({
         status: 'declined',
         resolved_at: new Date().toISOString(),
-        resolved_by_id: resolverId,
+        resolved_by_id: resolverName, // ✅ option A
       })
       .eq('id', voteId)
 

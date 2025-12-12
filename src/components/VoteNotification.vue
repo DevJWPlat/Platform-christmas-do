@@ -36,8 +36,8 @@
       await votesStore.acceptNomination(current.value.id)
       showNext()
     } catch (e) {
-      console.error(e)
-      alert('Could not accept. Check console.')
+      console.error('Vote action failed:', e)
+      alert(e?.message || JSON.stringify(e))
     } finally {
       busy.value = false
     }
@@ -50,14 +50,14 @@
       await votesStore.declineNomination(current.value.id)
       showNext()
     } catch (e) {
-      console.error(e)
-      alert('Could not decline. Check console.')
+      console.error('Vote action failed:', e)
+      alert(e?.message || JSON.stringify(e))
     } finally {
       busy.value = false
     }
   }
   
-  // Watch LENGTH, this is more reliable than watching the array object
+  // Watch LENGTH (more reliable than watching the array object)
   watch(
     () => votesStore.nominationNotifications.length,
     (len) => {
@@ -65,9 +65,7 @@
       if (!showing.value) showNext()
     },
   )
-
   
-  // Run once in case queue already has items
   onMounted(() => {
     console.log('[VoteNotification] mounted. currentUserId:', currentUserId.value)
     if (!showing.value) showNext()
@@ -79,18 +77,20 @@
       <div class="vote-popup">
         <h2 class="vote-title">New nomination</h2>
   
+        <p class="vote-subtitle">
+          <strong>{{ current?.createdByName || 'Someone' }}</strong>
+          nominated
+          <strong>{{ current?.targetName || 'someone' }}</strong>
+        </p>
+  
         <p class="vote-reason">
           <strong>Reason:</strong><br />
           {{ current?.reason || 'No reason given' }}
         </p>
   
         <div class="vote-actions">
-          <button class="btn ghost" :disabled="busy" @click="decline">
-            Decline
-          </button>
-          <button class="btn primary" :disabled="busy" @click="accept">
-            Accept
-          </button>
+          <button class="btn ghost" :disabled="busy" @click="decline">Decline</button>
+          <button class="btn primary" :disabled="busy" @click="accept">Accept</button>
         </div>
       </div>
     </div>
@@ -121,12 +121,17 @@
   }
   
   .vote-title {
-    margin: 0 0 12px 0;
+    margin: 0 0 10px 0;
     color: var(--accent);
     font-size: 20px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+  }
+  
+  .vote-subtitle {
+    margin: 0 0 14px 0;
+    opacity: 0.95;
   }
   
   .vote-reason {
@@ -155,11 +160,7 @@
   
   .btn.primary {
     border-color: var(--accent);
-    background: radial-gradient(
-      circle at left,
-      rgba(255, 75, 129, 0.5),
-      rgba(20, 20, 30, 0.95)
-    );
+    background: radial-gradient(circle at left, rgba(255, 75, 129, 0.5), rgba(20, 20, 30, 0.95));
   }
   
   .btn.ghost {
