@@ -13,21 +13,21 @@ export const usePlayersStore = defineStore('players', () => {
 
   // Queue for popups (used by MilestonePopup.vue)
   const milestoneNotifications = ref([])
-  // History for feed display (future use)
+  // History for feed display
   const milestoneHistory = ref([])
 
   // Track last known points per player so we can spot changes
   const lastPointsById = ref(new Map())
-  // Polling timer (fallback)
+  // Polling timer fallback
   const pollTimer = ref(null)
 
   const rankedPlayers = computed(() => {
     return [...players.value]
-      .sort((a, b) => (Number(b.points ?? 0) - Number(a.points ?? 0)))
+      .sort((a, b) => b.points - a.points)
       .map((p, i) => ({ ...p, rank: i + 1 }))
   })
 
-  // ✅ This is the real loader (what older code expects)
+  // ✅ KEEP THIS as a real function that returns players
   const loadPlayers = async () => {
     loading.value = true
     const { data, error } = await supabase.from('players').select('*')
@@ -90,7 +90,6 @@ export const usePlayersStore = defineStore('players', () => {
 
     if (navigator.vibrate) navigator.vibrate(150)
 
-    // Never let Slack failure break popups
     try {
       await sendMilestoneToSlack(player.name, milestoneData.points, milestoneData.action)
     } catch (err) {
@@ -100,18 +99,14 @@ export const usePlayersStore = defineStore('players', () => {
 
   const handlePointsChange = (player, oldPoints, newPoints) => {
     if (oldPoints === newPoints) return
-    if (milestones.includes(newPoints)) {
-      triggerMilestonePopup({ ...player, points: newPoints })
-    }
+    if (milestones.includes(newPoints)) triggerMilestonePopup(player)
   }
 
   const checkForMilestonesAcrossPlayers = () => {
     const map = lastPointsById.value
-
     for (const player of players.value) {
-      const prev = Number(map.get(player.id) ?? 0)
+      const prev = map.get(player.id) ?? 0
       const curr = Number(player.points ?? 0)
-
       if (prev !== curr) {
         handlePointsChange(player, prev, curr)
         map.set(player.id, curr)
@@ -140,10 +135,8 @@ export const usePlayersStore = defineStore('players', () => {
             if (idx !== -1) {
               const oldPoints = Number(players.value[idx].points ?? 0)
               const newPoints = Number(newRow.points ?? 0)
-
               players.value[idx] = newRow
               lastPointsById.value.set(newRow.id, newPoints)
-
               handlePointsChange(newRow, oldPoints, newPoints)
             }
           }
@@ -156,7 +149,6 @@ export const usePlayersStore = defineStore('players', () => {
       )
       .subscribe()
 
-    // fallback polling (helps if realtime misses updates)
     if (!pollTimer.value) {
       pollTimer.value = setInterval(async () => {
         await loadPlayers()
@@ -176,10 +168,9 @@ export const usePlayersStore = defineStore('players', () => {
     }
   }
 
-  // ✅ Call this on app start/login view
+  // ✅ “init” helper used by Home/Login
   const initPlayers = async () => {
     await loadPlayers()
-
     const map = new Map()
     for (const p of players.value) {
       map.set(p.id, Number(p.points ?? 0))
@@ -192,7 +183,7 @@ export const usePlayersStore = defineStore('players', () => {
     rankedPlayers,
     loading,
 
-    // ✅ BOTH exist now so nothing breaks
+    // IMPORTANT: export BOTH so production + older builds don’t crash
     loadPlayers,
     initPlayers,
 
