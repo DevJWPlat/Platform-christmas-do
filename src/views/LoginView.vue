@@ -16,13 +16,12 @@ const passwordError = ref('')
 const isPasswordModalOpen = ref(false)
 
 // ✅ load players from Supabase when this view mounts
-onMounted(() => {
-  // If user is already logged in, redirect to home
+onMounted(async () => {
   if (currentUserStore.isLoggedIn) {
     router.push({ name: 'home' })
     return
   }
-  playersStore.loadPlayers()
+  await playersStore.initPlayers()
 })
 
 const selectUser = (player) => {
