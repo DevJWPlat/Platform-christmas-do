@@ -21,8 +21,12 @@ onMounted(async () => {
     router.push({ name: 'home' })
     return
   }
-  await playersStore.initPlayers()
+
+  // works no matter what the store exposes
+  if (playersStore.initPlayers) await playersStore.initPlayers()
+  else if (playersStore.loadPlayers) await playersStore.loadPlayers()
 })
+
 
 const selectUser = (player) => {
   selectedPlayer.value = player

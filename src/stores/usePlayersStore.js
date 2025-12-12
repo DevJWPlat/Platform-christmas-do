@@ -18,18 +18,16 @@ export const usePlayersStore = defineStore('players', () => {
 
   // Track last known points per player so we can spot changes
   const lastPointsById = ref(new Map())
-  // Polling timer (fallback if realtime is flaky)
+  // Polling timer (fallback)
   const pollTimer = ref(null)
 
   const rankedPlayers = computed(() => {
     return [...players.value]
-      .sort((a, b) => b.points - a.points)
-      .map((p, i) => ({
-        ...p,
-        rank: i + 1,
-      }))
+      .sort((a, b) => (Number(b.points ?? 0) - Number(a.points ?? 0)))
+      .map((p, i) => ({ ...p, rank: i + 1 }))
   })
 
+  // ✅ This is the real loader (what older code expects)
   const loadPlayers = async () => {
     loading.value = true
     const { data, error } = await supabase.from('players').select('*')
@@ -78,15 +76,13 @@ export const usePlayersStore = defineStore('players', () => {
       id: crypto.randomUUID(),
       playerName: player.name,
       playerId: player.id,
-      points: player.points,
-      action: getMilestoneAction(player.points),
+      points: Number(player.points ?? 0),
+      action: getMilestoneAction(Number(player.points ?? 0)),
       createdAt: new Date().toISOString(),
     }
 
-    // Add to popup queue
     milestoneNotifications.value.push(milestoneData)
 
-    // Add to history for feed
     milestoneHistory.value.unshift(milestoneData)
     if (milestoneHistory.value.length > 50) {
       milestoneHistory.value = milestoneHistory.value.slice(0, 50)
@@ -94,46 +90,26 @@ export const usePlayersStore = defineStore('players', () => {
 
     if (navigator.vibrate) navigator.vibrate(150)
 
-    // Slack in a try/catch so it never breaks the popup
+    // Never let Slack failure break popups
     try {
-      console.log(
-        '[Milestones] Sending milestone to Slack:',
-        player.name,
-        player.points,
-        milestoneData.action,
-      )
-      await sendMilestoneToSlack(player.name, player.points, milestoneData.action)
+      await sendMilestoneToSlack(player.name, milestoneData.points, milestoneData.action)
     } catch (err) {
       console.error('[Milestones] Failed to send milestone to Slack', err)
     }
   }
 
-  /**
-   * Core logic: whenever a player's points change, check if
-   * the NEW value hits a milestone and if so, trigger popup + Slack.
-   */
   const handlePointsChange = (player, oldPoints, newPoints) => {
-    console.log(`[Milestones] Points changed for ${player.name}: ${oldPoints} -> ${newPoints}`)
-
-    // Only care about actual changes
     if (oldPoints === newPoints) return
-
-    // Only fire if the NEW value is a milestone
     if (milestones.includes(newPoints)) {
-      console.log(`[Milestones] ${player.name} hit milestone ${newPoints} – triggering popup`)
-      triggerMilestonePopup(player)
+      triggerMilestonePopup({ ...player, points: newPoints })
     }
   }
 
-  /**
-   * Run through all players and compare points with lastPointsById
-   * Used both after initial load and during polling.
-   */
   const checkForMilestonesAcrossPlayers = () => {
     const map = lastPointsById.value
 
     for (const player of players.value) {
-      const prev = map.get(player.id) ?? 0
+      const prev = Number(map.get(player.id) ?? 0)
       const curr = Number(player.points ?? 0)
 
       if (prev !== curr) {
@@ -144,26 +120,15 @@ export const usePlayersStore = defineStore('players', () => {
   }
 
   const startRealtime = () => {
-    // Avoid double subscription
-    if (subscription.value) {
-      console.log('[Players] Realtime already started')
-      return
-    }
-
-    console.log('[Players] Starting realtime subscription…')
+    if (subscription.value) return
 
     subscription.value = supabase
       .channel('players-changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'players',
-        },
+        { event: '*', schema: 'public', table: 'players' },
         (payload) => {
           const { eventType, new: newRow, old: oldRow } = payload
-          console.log('[Players] Realtime event:', eventType, payload)
 
           if (eventType === 'INSERT') {
             players.value.push(newRow)
@@ -189,66 +154,51 @@ export const usePlayersStore = defineStore('players', () => {
           }
         },
       )
-      .subscribe((status) => {
-        console.log('[Players] Realtime channel status:', status)
-      })
+      .subscribe()
 
-    // 🔁 Fallback polling every 5 seconds for extra safety
+    // fallback polling (helps if realtime misses updates)
     if (!pollTimer.value) {
-      console.log('[Players] Starting 5s polling fallback for milestones')
       pollTimer.value = setInterval(async () => {
-        try {
-          await loadPlayers()
-          checkForMilestonesAcrossPlayers()
-        } catch (err) {
-          console.error('[Players] Polling error', err)
-        }
+        await loadPlayers()
+        checkForMilestonesAcrossPlayers()
       }, 5000)
     }
   }
 
   const stopRealtime = () => {
     if (subscription.value) {
-      console.log('[Players] Stopping realtime subscription')
       supabase.removeChannel(subscription.value)
       subscription.value = null
     }
-
     if (pollTimer.value) {
       clearInterval(pollTimer.value)
       pollTimer.value = null
     }
   }
 
-  /**
-   * Helper to be called on app start:
-   *  - loads players
-   *  - initialises lastPointsById
-   *  - checks if anyone already sits on a milestone (in case points were changed while app closed)
-   */
+  // ✅ Call this on app start/login view
   const initPlayers = async () => {
     await loadPlayers()
 
     const map = new Map()
     for (const p of players.value) {
-      const pts = Number(p.points ?? 0)
-      map.set(p.id, pts)
+      map.set(p.id, Number(p.points ?? 0))
     }
     lastPointsById.value = map
-
-    console.log('[Players] Players loaded with numeric points:', players.value)
   }
 
   return {
     players,
     rankedPlayers,
     loading,
-    // lifecycle helpers
+
+    // ✅ BOTH exist now so nothing breaks
     loadPlayers,
     initPlayers,
+
     startRealtime,
     stopRealtime,
-    // milestone data
+
     milestoneNotifications,
     milestoneHistory,
   }
