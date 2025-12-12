@@ -1,85 +1,47 @@
 // src/utils/slack.js
+import { supabase } from '../supabaseClient'
 
-const FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/slack`
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-async function postToSlack(payload) {
+// Generic helper to call the Supabase Edge Function
+async function callSlackFunction(body) {
   try {
-    const res = await fetch(FUNCTION_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // anon key so Supabase knows it's your project
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify(payload),
+    const { data, error } = await supabase.functions.invoke('slack', {
+      body,
     })
 
-    if (!res.ok) {
-      console.error('Slack function error', res.status, await res.text())
+    if (error) {
+      console.error('Slack function error', error)
+    } else {
+      console.log('Slack function OK:', data)
     }
   } catch (err) {
-    console.error('Failed to send Slack message', err)
+    console.error('Failed to call Slack function', err)
   }
 }
 
+// Optional plain text helper if you ever want it
 export function sendSlackText(text) {
-  return postToSlack({ text })
+  return callSlackFunction({
+    type: 'text',
+    text,
+  })
 }
 
+// 🎄 Nomination notification
 export function sendNominationToSlack({ nominee, nominator, reason }) {
-  const payload = {
-    blocks: [
-      {
-        type: 'header',
-        text: { type: 'plain_text', text: 'New nomination 🎄', emoji: true },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*${nominator}* nominated *${nominee}* for a point.`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*Reason:*\n>${reason || '_No reason given_'}`
-        },
-      },
-    ],
-  }
-
-  return postToSlack(payload)
+  return callSlackFunction({
+    type: 'nomination',
+    nominee,
+    nominator,
+    reason,
+  })
 }
 
+// 🎉 Milestone notification
 export function sendMilestoneToSlack(playerName, points, action) {
-  const payload = {
-    blocks: [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '*Milestone reached :tada:*',
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*${playerName}* has now reached *${points} points*`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*Forfeit:*\n>${action}`,
-        },
-      },
-    ],
-  }
-
-  return postToSlack(payload)
+  return callSlackFunction({
+    type: 'milestone',
+    playerName,
+    points,
+    action,
+  })
 }

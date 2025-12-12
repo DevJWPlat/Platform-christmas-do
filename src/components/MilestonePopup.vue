@@ -1,32 +1,50 @@
 <script setup>
-import { ref, watch } from 'vue'
-import { usePlayersStore } from '../stores/usePlayersStore'
-
-const playersStore = usePlayersStore()
-const showing = ref(false)
-const current = ref(null)
-
-const closePopup = () => {
-  showing.value = false
-  current.value = null
-}
-
-watch(
+  import { ref, watch } from 'vue'
+  import { usePlayersStore } from '../stores/usePlayersStore'
+  
+  const playersStore = usePlayersStore()
+  const showing = ref(false)
+  const current = ref(null)
+  
+  const showNextFromQueue = () => {
+    const queue = playersStore.milestoneNotifications
+    if (queue.length > 0) {
+      current.value = queue[0]        // show first in queue
+      showing.value = true
+    }
+  }
+  
+  const closePopup = () => {
+    showing.value = false
+    current.value = null
+  
+    // remove the one we just showed
+    if (playersStore.milestoneNotifications.length > 0) {
+      playersStore.milestoneNotifications.shift()
+    }
+  
+    // show next, if any
+    showNextFromQueue()
+  }
+  
+  // react when queue length changes
+  watch(
   () => playersStore.milestoneNotifications,
   (queue) => {
-    if (!showing.value && queue.length > 0) {
-      current.value = queue.shift()
-      showing.value = true
+    console.log("👀 POPUP WATCHER FIRED. QUEUE:", queue);
 
-      // Auto-close after 8 seconds instead of 5
-      setTimeout(() => {
-        closePopup()
-      }, 8000)
+    if (!showing.value && queue.length > 0) {
+      console.log("✔ SHOWING POPUP NOW:", queue[0]);
+
+      current.value = queue.shift();
+      showing.value = true;
     }
   },
-  { deep: true },
-)
+  { deep: true }
+);
+
 </script>
+  
 
 <template>
   <div v-if="showing" class="milestone-backdrop">
@@ -175,7 +193,6 @@ watch(
   font-weight: 600;
   color: var(--text-main);
   margin: 0;
-  font-style: italic;
 }
 
 .milestone-close {

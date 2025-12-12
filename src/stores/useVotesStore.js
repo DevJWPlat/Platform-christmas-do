@@ -2,57 +2,50 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { supabase } from '../supabaseClient'
-import { usePlayersStore } from './usePlayersStore'
 import { useCurrentUserStore } from './useCurrentUserStore'
 
 export const useVotesStore = defineStore('votes', () => {
-  const pendingNotifications = ref([])
+  const nominationNotifications = ref([]) // popup queue
   const subscription = ref(null)
 
-  console.log('"votes" store installed 🧃')
+  const enqueueNomination = (voteRow) => {
+    nominationNotifications.value.push({
+      id: voteRow.id,
+      targetId: voteRow.target_id,
+      createdById: voteRow.created_by_id,
+      reason: voteRow.reason,
+      expiresAt: voteRow.expires_at,
+      status: voteRow.status,
+    })
+  }
 
   const startRealtime = () => {
-    const currentUserStore = useCurrentUserStore()
-    const playersStore = usePlayersStore()
-
     if (subscription.value) return
-
+  
+    console.log('[votes] starting realtime…')
+  
     subscription.value = supabase
       .channel('votes-changes')
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'votes',
-        },
-        payload => {
-          console.log('Realtime vote payload:', payload)
+        { event: 'INSERT', schema: 'public', table: 'votes' },
+        (payload) => {
+          console.log('[votes] realtime INSERT payload:', payload)
+  
           const vote = payload.new
-
-          // ignore votes created by this user
-          if (vote.created_by_id === currentUserStore.user?.id) return
-
-          const target = playersStore.players.find(p => p.id === vote.target_id)
-          const creator = playersStore.players.find(
-            p => p.id === vote.created_by_id
-          )
-
-          const decoratedVote = {
-            ...vote,
-            targetName: target?.name || vote.target_id,
-            creatorName: creator?.name || vote.created_by_id,
-          }
-
-          pendingNotifications.value.push(decoratedVote)
-
-          if (navigator.vibrate) {
-            navigator.vibrate(80)
-          }
-        }
+          if (!vote) return
+  
+          if (vote.status && vote.status !== 'pending') return
+  
+          enqueueNomination(vote)
+          console.log('[votes] queued nominationNotifications length:', nominationNotifications.value.length)
+        },
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('[votes] channel status:', status)
+      })
   }
+  
 
   const stopRealtime = () => {
     if (subscription.value) {
@@ -61,105 +54,84 @@ export const useVotesStore = defineStore('votes', () => {
     }
   }
 
-  const popNextNotification = () => {
-    return pendingNotifications.value.shift() || null
-  }
+  const acceptNomination = async (voteId) => {
+    const currentUserStore = useCurrentUserStore()
+    const resolverId = currentUserStore.user?.id || null
 
-  const respondToVote = async (voteId, response, userId) => {
-    const { error } = await supabase.from('vote_responses').insert({
-      vote_id: voteId,
-      user_id: userId,
-      response,
-    })
-
-    if (error) {
-      console.error('Error saving vote response:', error)
-    }
-  }
-
-  // 🔥 NEW: resolve expired votes and award points
-  const resolveExpiredVotes = async () => {
-    // 1. get expired, still-pending votes
-    const { data: expiredVotes, error: expiredError } = await supabase
+    // Fetch vote first (safer than fetching after update)
+    const { data: voteRow, error: fetchErr } = await supabase
       .from('votes')
-      .select('*')
-      .eq('status', 'pending')
-      .lt('expires_at', new Date().toISOString())
-  
-    if (expiredError) {
-      console.error('Error fetching expired votes:', expiredError)
-      return
-    }
-  
-    if (!expiredVotes || expiredVotes.length === 0) return
-  
-    console.log('Expired votes to resolve:', expiredVotes)
-  
-    for (const vote of expiredVotes) {
-      // 2. get responses for this vote
-      const { data: responses, error: respError } = await supabase
-        .from('vote_responses')
-        .select('response')
-        .eq('vote_id', vote.id)
-  
-      if (respError) {
-        console.error('Error fetching responses:', respError)
-        continue
+      .select('target_id, status')
+      .eq('id', voteId)
+      .single()
+
+    if (fetchErr) throw fetchErr
+    if (voteRow?.status && voteRow.status !== 'pending') return
+
+    // Mark vote accepted
+    const { error: voteErr } = await supabase
+      .from('votes')
+      .update({
+        status: 'accepted',
+        resolved_at: new Date().toISOString(),
+        resolved_by_id: resolverId,
+      })
+      .eq('id', voteId)
+
+    if (voteErr) throw voteErr
+
+    // OPTIONAL: add a point to the target player
+    if (voteRow?.target_id) {
+      const { data: player, error: pErr } = await supabase
+        .from('players')
+        .select('points')
+        .eq('id', voteRow.target_id)
+        .single()
+
+      if (pErr) {
+        console.error('Could not fetch player points', pErr)
+        return
       }
-  
-      let finalStatus = 'approved' // default
-  
-      if (responses.length === 0) {
-        // nobody replied in 5 minutes → vote sticks
-        finalStatus = 'approved'
-      } else {
-        const agree = responses.filter(r => r.response === 'agree').length
-        const disagree = responses.filter(r => r.response === 'disagree').length
-  
-        // new rule: 4+ yes vs 4+ no
-        if (agree >= 4 && disagree < 4) {
-          finalStatus = 'approved'
-        } else if (disagree >= 4 && agree < 4) {
-          finalStatus = 'rejected'
-        } else {
-          // no 4+ majority, fall back to simple majority
-          finalStatus = disagree >= agree ? 'rejected' : 'approved'
-        }
-      }
-  
-      // 3. update the vote status
-      const { error: updateError } = await supabase
-        .from('votes')
-        .update({ status: finalStatus })
-        .eq('id', vote.id)
-  
-      if (updateError) {
-        console.error('Error updating vote status:', updateError)
-        continue
-      }
-  
-      console.log(`Vote ${vote.id} resolved as ${finalStatus}`)
-  
-      // 4. if approved, bump player points (leave as you already had it)
-      if (finalStatus === 'approved') {
-        const { error: rpcError } = await supabase.rpc('increment_player_points', {
-          player_id: vote.target_id,
-        })
-  
-        if (rpcError) {
-          console.error('Error incrementing player points:', rpcError)
-        }
-      }
+
+      await supabase
+        .from('players')
+        .update({ points: (player.points || 0) + 1 })
+        .eq('id', voteRow.target_id)
     }
   }
-  
+
+  const declineNomination = async (voteId) => {
+    const currentUserStore = useCurrentUserStore()
+    const resolverId = currentUserStore.user?.id || null
+
+    const { error } = await supabase
+      .from('votes')
+      .update({
+        status: 'declined',
+        resolved_at: new Date().toISOString(),
+        resolved_by_id: resolverId,
+      })
+      .eq('id', voteId)
+
+    if (error) throw error
+  }
+
+  const resolveExpiredVotes = async () => {
+    const now = new Date().toISOString()
+
+    await supabase
+      .from('votes')
+      .update({ status: 'expired' })
+      .eq('status', 'pending')
+      .lt('expires_at', now)
+  }
 
   return {
-    pendingNotifications,
+    nominationNotifications,
     startRealtime,
     stopRealtime,
-    popNextNotification,
-    respondToVote,
-    resolveExpiredVotes, // 👈 IMPORTANT: exported here
+    acceptNomination,
+    declineNomination,
+    resolveExpiredVotes,
   }
 })
