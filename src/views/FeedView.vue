@@ -94,7 +94,7 @@ const formatTime = (date) => {
 
 onMounted(() => {
   // Load players first so we can match names
-  playersStore.loadPlayers().then(() => {
+  playersStore.initPlayers().then(() => {
     loadFeed()
   })
 
